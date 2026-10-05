@@ -24,4 +24,24 @@ public class UserService {
 		userDao.saveUser(user);
 	}
 
+	  @Transactional
+	    public void deleteuser(int id) {
+	        System.out.println("UserService.deleteUser()");
+	        userDao.deleteuser(id);
+	    }
+	
+	public User getUserById(int id) {
+		System.out.println("UserService.getUserById()");
+		return userDao.getUserById(id);
+	}
+
+	
+	@Transactional
+	public void updateUser(User user) {
+
+	    System.out.println("UserService.updateUser()");
+
+	    userDao.updateUser(user);
+	}
+	
 }
