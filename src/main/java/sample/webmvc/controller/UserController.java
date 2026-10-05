@@ -1,126 +1,105 @@
 package sample.webmvc.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import sample.webmvc.entity.User;
-import sample.webmvc.service.UserService;
 
-@Controller
-public class UserController {
-
-	@Autowired
-	UserService userService;
-
-	public void setUserService(UserService userService) {
-		this.userService = userService;
-	}
-
-	@GetMapping("/")
-	public String greet() {
-		System.out.println("UserController.greet : ");
-
-		return "welcome";
-
-	}
-
-	@GetMapping("/login")
-	public String login() {
-		System.out.println("UserController.login()");
-		return "login";
-
-	}
-
-	@GetMapping("/path/{id}")
+    @Controller
 	@ResponseBody
-	public User pathVariablle(@PathVariable(name = "id") int id) {
+	public class UserController {
 		
-		System.out.println("UserController.pathVariablle : " + id);
+		static Map<Integer, User> users = new HashMap<>();
+		static {
+			
+			users.put(1, new User(1,"Vikas","Male","Noida"));
+			users.put(2, new User(2,"Kunal","Male","GZB"));
+			users.put(3, new User(3,"Nakul","Male","Noida"));
+			users.put(4, new User(4,"Abhi","Male","Gurgaon"));
+			users.put(5, new User(5,"Arjun","Male","Noida"));
+		}
+		
+		@GetMapping
+		public User greet() {
+			System.out.println("UserController.greet : ");
+			return new User(99,"Dummy","No","Planet Not Found");
+		}
+			
+			@GetMapping("/getuser/{id}")
+			public User getuserbyid(@PathVariable(name = "id") int id) {
+				System.out.println("getuserbyid"+id);
+				return users.get(id);
+			}
+			
+			@PostMapping
+			public void adduser(@RequestBody User user) {
+				
+				System.out.println("adduser()");
+				System.out.println(user);
+				users.put(user.getId(),user);
+			}
+			
+			@PutMapping
+			public void updateUser(@RequestBody User user) {
 
-		return userService.getUserById(id);
-	}
+			    System.out.println("updateUser()");
+			    System.out.println(user);
 
-	@GetMapping("/sign-up")
-	public String signUp() {
-		System.out.println("UserController.login()");
-		return "signup";
+			    users.put(user.getId(), user);
+			}
+			
+			@PatchMapping
+			public void patchUser(@RequestBody User user) {
 
-	}
+			    System.out.println("patchUser()");
+			    System.out.println(user);
 
-	@PostMapping("/sign-up")
-	public String saveUser(@ModelAttribute User user, Model model) {
-		System.out.println("UserController.saveUser : ");
-		System.out.println(user);
-		userService.saveUser(user);
-		model.addAttribute("user", user);
-		return "success";
+			    User existingUser = users.get(user.getId());
 
-	}
+			    if (existingUser != null) {
+
+			        if (user.getName() != null) {
+			            existingUser.setName(user.getName());
+			        }
+
+			        if (user.getGender() != null) {
+			            existingUser.setGender(user.getGender());
+			        }
+
+			        if (user.getAddress() != null) {
+			            existingUser.setAddress(user.getAddress());
+			        }
+
+			        users.put(user.getId(), existingUser);
+			    }
+			}
+			
+			@DeleteMapping("/{id}")
+			public String deleteuser(@PathVariable(name="id")int id)
+			{
+				System.out.println("deleteuser()"+id);
+				users.remove(id);
+				
+				return "userdeleted succesfully";
+			}
+			
+			
+			
+			
+			}
+			
+			
+
+		
+		
 	
-	@PostMapping("/delete/{id}")
-	public String deleteUser(@PathVariable(name = "id") int id) {
-
-	    System.out.println("UserController.deleteUser: " + id);
-
-	    userService.deleteuser(id);
-
-	    return "user deleted succesfully";
-	}
-
 	
-	@PutMapping("/update/{id}")
-	@ResponseBody
-	public String updateUser(
-	        @PathVariable(name = "id") int id,
-	        @RequestBody User user) {
-
-	    System.out.println("UserController.updateUser(): " + id);
-
-	    user.setId(id);
-
-	    userService.updateUser(user);
-
-	    return "User updated successfully";
-	}
-	
-
-//	@PostMapping("/sign-up")
-//	public String saveUser(@RequestParam(name = "name") String name,@RequestParam(name = "gender") String gender,@RequestParam(name = "address") String address,Model model) {
-//		
-//		System.out.println("UserController.userLogin : "+name);
-//		System.out.println("UserController.userLogin : "+gender);
-//		
-//		User user = new User(name, gender, address) ;
-//		
-//		userService.saveUser(user);
-//		
-//		model.addAttribute("user", user);
-//		
-//		return "success";
-//
-//	}
-
-	@PostMapping("/login")
-	public String userLogin(@RequestParam(name = "username") String username,
-			@RequestParam(name = "password") String password, Model model) {
-
-		System.out.println("UserController.userLogin : " + username);
-		System.out.println("UserController.userLogin : " + password);
-
-		model.addAttribute("username", username);
-		model.addAttribute("password", password);
-
-		return "profile";
-
-	}
-
-}
